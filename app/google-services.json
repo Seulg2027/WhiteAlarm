@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "741100707541",
+    "project_id": "whitealarm-d6d2c",
+    "storage_bucket": "whitealarm-d6d2c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:741100707541:android:53e0790144de41b83f4c5c",
+        "android_client_info": {
+          "package_name": "com.seulgi.whitealarm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "741100707541-s1jeprhbeslg384ubvkhvpbue9k70j3t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC446n-V2-qVhv75R7RcitB3RO86BTbJ6c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "741100707541-s1jeprhbeslg384ubvkhvpbue9k70j3t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
