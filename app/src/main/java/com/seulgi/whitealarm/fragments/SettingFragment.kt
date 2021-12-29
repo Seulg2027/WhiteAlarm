@@ -1,5 +1,6 @@
 package com.seulgi.whitealarm.fragments
 
+import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -28,6 +29,8 @@ class SettingFragment : Fragment() {
 
     private lateinit var binding: FragmentSettingBinding
 
+    private var TAG = SettingFragment::class.java.simpleName
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -53,6 +56,10 @@ class SettingFragment : Fragment() {
             val intent = Intent(context, IntroActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
+        }
+
+        if ( Manifest.permission.ACCESS_FINE_LOCATION == "android.permission.ACCESS_FINE_LOCATION" ){
+
         }
 
         return binding.root

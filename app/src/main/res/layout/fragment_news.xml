@@ -20,6 +20,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:text="뉴스"
+                android:textStyle="bold"
+                android:textSize="16dp"
                 android:layout_gravity="center"
                 android:textColor="@color/black"/>
 
