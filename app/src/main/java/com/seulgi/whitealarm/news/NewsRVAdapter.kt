@@ -20,8 +20,6 @@ class NewsRVAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsRVAdapter.Viewholder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.news_rv_item, parent, false)
-
-        Log.d(TAG, items.toString())
         return Viewholder(v)
     }
 
@@ -36,7 +34,6 @@ class NewsRVAdapter(
     inner class Viewholder(itemView: View) : RecyclerView.ViewHolder(itemView){
         fun bindItems(item : NewsModel) {
             itemView.setOnClickListener{
-                Log.d(TAG, item.webUrl)
                 val intent = Intent(context, NewsLinkActivity::class.java)
                 intent.putExtra("url", item.webUrl)
                 itemView.context.startActivity(intent)
