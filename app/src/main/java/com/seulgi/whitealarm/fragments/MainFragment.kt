@@ -141,7 +141,6 @@ class MainFragment : Fragment() {
                     // All location settings are satisfied. The client can initialize
                     // location requests here.
                     // ...
-                    Log.d(TAG, "getLocation")
                     fusedLocationClient.requestLocationUpdates(locationRequest, LocationCall(tvLatitude, tvLongitude).locationCallback, Looper.getMainLooper())
                 }
                 addOnFailureListener { exception ->
