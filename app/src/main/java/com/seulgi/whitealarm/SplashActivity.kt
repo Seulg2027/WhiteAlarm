@@ -14,16 +14,21 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
         Log.d("SplashActivity", FBauth.getUid())
 
-        if ( FBauth.getUid() == null) {
-            Handler().postDelayed({
-                startActivity(Intent(this, IntroActivity::class.java))
-                finish()
-            }, 3000)
-        } else {
-            Handler().postDelayed({
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-            }, 3000)
-        }
+        Handler().postDelayed({
+            startActivity(Intent(this, IntroActivity::class.java))
+            finish()
+        }, 3000)
+
+//        if ( FBauth.getUid() == null) {
+//            Handler().postDelayed({
+//                startActivity(Intent(this, IntroActivity::class.java))
+//                finish()
+//            }, 3000)
+//        } else {
+//            Handler().postDelayed({
+//                startActivity(Intent(this, MainActivity::class.java))
+//                finish()
+//            }, 3000)
+//        }
     }
 }

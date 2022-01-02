@@ -90,13 +90,21 @@ class HospitalFragment : Fragment() {
         binding.mypageFM.setOnClickListener {
             it.findNavController().navigate(R.id.action_hospitalFragment_to_settingFragment)
         }
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+
+        val mapView = MapView(requireContext())
+        binding.mapView.addView(mapView)
 
         binding.locationBtn.setOnClickListener {
-            var intent = Intent(requireContext(), ExampleActivity::class.java)
-
-            startActivity(intent)
+//            var intent = Intent(requireContext(), ExampleActivity::class.java)
+//
+//            startActivity(intent)
+            if (checkLocationService()) {
+                moveToLocation(mapView)
+            } else {
+                Toast.makeText(requireContext(), "GPS를 켜주세요", Toast.LENGTH_SHORT).show()
+            }
         }
-
 
         return binding.root
     }
@@ -107,7 +115,9 @@ class HospitalFragment : Fragment() {
                 super.onLocationResult(p0)
                 Log.d(TAG, p0.lastLocation.toString())
                 Log.d(TAG, p0.lastLocation.latitude.toString())
-                mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(p0.lastLocation.latitude, 126.9813055), true)
+                Toast.makeText(requireContext(), "위치 권한이 승인되었습니다", Toast.LENGTH_SHORT).show()
+                mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(p0.lastLocation.latitude, p0.lastLocation.longitude), true)
+                startTracking(mapView)
 
             }
             override fun onLocationAvailability(p0: LocationAvailability) {
@@ -144,8 +154,6 @@ class HospitalFragment : Fragment() {
         }
     }
 
-
-
     // GPS가 켜져있는지 확인
     private fun checkLocationService(): Boolean {
         if (::locationManager.isInitialized.not()) {
@@ -156,10 +164,5 @@ class HospitalFragment : Fragment() {
 
     private fun startTracking(mapView : MapView) {
         mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
-    }
-
-    // 위치추적 중지
-    private fun stopTracking(mapView : MapView) {
-        mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
     }
 }

@@ -86,11 +86,8 @@ class NewsFragment : Fragment() {
 
 //        FBRef.news.push().setValue(
 //                NewsModel(
-//
 //                )
 //        )
-
-
 
         return binding.root
     }
