@@ -2,7 +2,7 @@ package com.seulgi.whitealarm.hospital
 
 data class ResultSearchKeyword(
         var meta: PlaceMeta,
-        var documents: List<Place>
+        var documents: ArrayList<Place>
 )
 
 data class PlaceMeta(

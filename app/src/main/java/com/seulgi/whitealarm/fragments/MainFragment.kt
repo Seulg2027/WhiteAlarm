@@ -92,7 +92,6 @@ class MainFragment : Fragment() {
                 permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                     // Precise location access granted.
                     Log.d(TAG, "fine")
-                    Toast.makeText(requireContext(), "위치 정보 사용이 승인되었습니다.", Toast.LENGTH_LONG).show()
                 }
                 permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
                     // Only approximate location access granted.
@@ -106,60 +105,8 @@ class MainFragment : Fragment() {
         }
         locationPermissionRequest.launch(permissions)
 
-        binding.locationBtn.setOnClickListener {
-            Log.d(TAG, "클릭")
-            getLocation(binding.tvLatitude, binding.tvLongitude)
-        }
-
         return binding.root
     }
 
-    inner class LocationCall(tvLatitude : TextView, tvLongitude : TextView) {
-        val locationCallback = object : LocationCallback(){
-            override fun onLocationResult(p0 : LocationResult){
-                super.onLocationResult(p0)
-                Log.d(TAG, p0.lastLocation.latitude.toString())
-                tvLatitude.text = p0.lastLocation.latitude.toString()
-                tvLongitude.text = p0.lastLocation.longitude.toString()
-            }
-            override fun onLocationAvailability(p0: LocationAvailability) {
-                super.onLocationAvailability(p0)
-            }
-        }
-    }
 
-    private fun checkPermission(permissions: Array<String>): Boolean {
-        return permissions.all {
-            ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
-        }
-    }
-
-    private fun getLocation(tvLatitude : TextView, tvLongitude : TextView) {
-        if (checkPermission(permissions)) {
-            LocationServices.getSettingsClient(requireContext()).checkLocationSettings(builder.build()).run {
-                addOnSuccessListener { response ->
-                    // All location settings are satisfied. The client can initialize
-                    // location requests here.
-                    // ...
-                    fusedLocationClient.requestLocationUpdates(locationRequest, LocationCall(tvLatitude, tvLongitude).locationCallback, Looper.getMainLooper())
-                }
-                addOnFailureListener { exception ->
-                    if (exception is ResolvableApiException) {
-                        // Location settings are not satisfied, but this can be fixed
-                        // by showing the user a dialog.
-                        try {
-                            // Show the dialog by calling startResolutionForResult(),
-                            // and check the result in onActivityResult().
-                            val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution).build()
-                            resolutionResultLauncher.launch(intentSenderRequest) }
-                        catch (sendEx: IntentSender.SendIntentException) {
-                            // Ignore the error.
-                        }
-                    }
-                }
-            }
-        } else {
-            permissionResultLauncher.launch(permissions)
-        }
-    }
 }

@@ -21,14 +21,14 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.seulgi.whitealarm.R
 import com.seulgi.whitealarm.auth.SignupActivity
 import com.seulgi.whitealarm.databinding.FragmentHospitalBinding
-import com.seulgi.whitealarm.hospital.ExampleActivity
-import com.seulgi.whitealarm.hospital.KakaoAPI
-import com.seulgi.whitealarm.hospital.ResultSearchKeyword
+import com.seulgi.whitealarm.hospital.*
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
 import retrofit2.Retrofit
@@ -80,8 +80,8 @@ class HospitalFragment : Fragment() {
         const val BASE_URL = "https://dapi.kakao.com/"
         const val API_KEY = "KakaoAK e5424acbaac76f6c09c5b54953d7df06"
     }
-    private lateinit var x : String
-    private lateinit var y : String
+    private lateinit var rvAdapter : HospitalRVAdapter
+    private var items = ArrayList<Place>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,36 +109,32 @@ class HospitalFragment : Fragment() {
         val mapView = MapView(requireContext())
         binding.mapView.addView(mapView)
 
+        // RecyclerView
+        rvAdapter = HospitalRVAdapter(requireContext(), items)
+
         binding.locationBtn.setOnClickListener {
             if (checkLocationService()) {
-                x = "100"
-                y = "10"
                 moveToLocation(mapView)
-
-                searchKeyword("병원", x, y)
             } else {
                 Toast.makeText(requireContext(), "GPS를 켜주세요", Toast.LENGTH_SHORT).show()
             }
         }
+        val recycler : RecyclerView = binding.rv
+        recycler.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
+        recycler.adapter = rvAdapter
 
         return binding.root
-    }
-
-    private fun changeLocation(new_x: String, new_y: String) {
-        x = new_x
-        y = new_y
     }
 
     inner class LocationCall(mapView : MapView) {
         val locationCallback = object : LocationCallback(){
             override fun onLocationResult(p0 : LocationResult){
                 super.onLocationResult(p0)
-                changeLocation(p0.lastLocation.latitude.toString(), p0.lastLocation.longitude.toString())
                 Log.d(TAG, p0.lastLocation.latitude.toString())
                 Toast.makeText(requireContext(), "위치 권한이 승인되었습니다", Toast.LENGTH_SHORT).show()
                 mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(p0.lastLocation.latitude, p0.lastLocation.longitude), true)
                 startTracking(mapView)
-
+                searchKeyword("병원", p0.lastLocation.latitude.toString(), p0.lastLocation.longitude.toString())
             }
             override fun onLocationAvailability(p0: LocationAvailability) {
                 super.onLocationAvailability(p0)
@@ -192,6 +188,8 @@ class HospitalFragment : Fragment() {
                 // api 통신 성공
                 Log.d(TAG, "Raw: ${response.raw()}")
                 Log.d(TAG, "Body: ${response.body()}")
+
+                rvAdapter.notifyDataSetChanged()
             }
 
             override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
