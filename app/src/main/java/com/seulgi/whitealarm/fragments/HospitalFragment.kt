@@ -29,6 +29,7 @@ import com.seulgi.whitealarm.R
 import com.seulgi.whitealarm.auth.SignupActivity
 import com.seulgi.whitealarm.databinding.FragmentHospitalBinding
 import com.seulgi.whitealarm.hospital.*
+import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
 import retrofit2.Retrofit
@@ -81,7 +82,7 @@ class HospitalFragment : Fragment() {
         const val API_KEY = "KakaoAK e5424acbaac76f6c09c5b54953d7df06"
     }
     private lateinit var rvAdapter : HospitalRVAdapter
-    private var items = ArrayList<Place>()
+    private var listItems = arrayListOf<HospitalListLayout>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,7 +111,7 @@ class HospitalFragment : Fragment() {
         binding.mapView.addView(mapView)
 
         // RecyclerView
-        rvAdapter = HospitalRVAdapter(requireContext(), items)
+        rvAdapter = HospitalRVAdapter(requireContext(), listItems)
 
         binding.locationBtn.setOnClickListener {
             if (checkLocationService()) {
@@ -123,6 +124,13 @@ class HospitalFragment : Fragment() {
         recycler.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         recycler.adapter = rvAdapter
 
+        rvAdapter.setItemClickListener(object: HospitalRVAdapter.OnItemClickListener {
+            override fun onClick(v: View, position: Int){
+                val mapPoint = MapPoint.mapPointWithGeoCoord(listItems[position].y, listItems[position].x)
+                mapView.setMapCenterPointAndZoomLevel(mapPoint, 1,true)
+            }
+        })
+
         return binding.root
     }
 
@@ -131,10 +139,9 @@ class HospitalFragment : Fragment() {
             override fun onLocationResult(p0 : LocationResult){
                 super.onLocationResult(p0)
                 Log.d(TAG, p0.lastLocation.latitude.toString())
-                Toast.makeText(requireContext(), "위치 권한이 승인되었습니다", Toast.LENGTH_SHORT).show()
                 mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(p0.lastLocation.latitude, p0.lastLocation.longitude), true)
                 startTracking(mapView)
-                searchKeyword("병원", p0.lastLocation.latitude.toString(), p0.lastLocation.longitude.toString())
+                searchKeyword("병원", p0.lastLocation.latitude.toString(), p0.lastLocation.longitude.toString(), mapView)
             }
             override fun onLocationAvailability(p0: LocationAvailability) {
                 super.onLocationAvailability(p0)
@@ -171,7 +178,7 @@ class HospitalFragment : Fragment() {
     }
 
     // 키워드 검색 //
-    private fun searchKeyword(keyword: String, x: String, y: String){
+    private fun searchKeyword(keyword: String, x: String, y: String, mapView: MapView){
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -188,8 +195,7 @@ class HospitalFragment : Fragment() {
                 // api 통신 성공
                 Log.d(TAG, "Raw: ${response.raw()}")
                 Log.d(TAG, "Body: ${response.body()}")
-
-                rvAdapter.notifyDataSetChanged()
+                setItems(response.body(), mapView)
             }
 
             override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
@@ -197,6 +203,38 @@ class HospitalFragment : Fragment() {
                 Log.w(TAG, "통신 실패: ${t.message}")
             }
         })
+    }
+
+    // 검색 결과 처리 //
+    private fun setItems(searchResult: ResultSearchKeyword?, mapView: MapView){
+        if(!searchResult?.documents.isNullOrEmpty()) {
+            listItems.clear()
+            mapView.removeAllPolylines()
+            for (document in searchResult!!.documents) {
+                // 결과를 리사이클러 뷰에 추가
+                val item = HospitalListLayout(document.place_name,
+                        document.road_address_name,
+                        document.address_name,
+                        document.x.toDouble(),
+                        document.y.toDouble())
+                listItems.add(item)
+
+                // 지도에 마커 추가
+                val point = MapPOIItem()
+                point.apply {
+                    itemName = document.place_name
+                    mapPoint = MapPoint.mapPointWithGeoCoord(document.y.toDouble(),
+                            document.x.toDouble())
+                    markerType = MapPOIItem.MarkerType.BluePin
+                    selectedMarkerType = MapPOIItem.MarkerType.RedPin
+                }
+                mapView.addPOIItem(point)
+            }
+            rvAdapter.notifyDataSetChanged()
+
+        } else {
+            Toast.makeText(requireContext(), "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
+        }
     }
 
 
