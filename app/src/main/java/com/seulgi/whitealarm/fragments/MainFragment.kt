@@ -22,8 +22,17 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.seulgi.whitealarm.main.VisitModel
+import com.seulgi.whitealarm.main.VisitRVAdapter
+import com.seulgi.whitealarm.news.NewsModel
+import com.seulgi.whitealarm.util.FBRef
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -37,11 +46,9 @@ private const val ARG_PARAM2 = "param2"
  */
 class MainFragment : Fragment() {
     private lateinit var binding: FragmentMainBinding
+    lateinit var rvAdapter: VisitRVAdapter
 
     private var TAG = MainFragment::class.java.simpleName
-
-    private lateinit var permissionResultLauncher: ActivityResultLauncher<Array<String>>
-    private lateinit var resolutionResultLauncher: ActivityResultLauncher<IntentSenderRequest>
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -50,17 +57,6 @@ class MainFragment : Fragment() {
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
     )
-
-    private val locationRequest = LocationRequest.create().apply {
-        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        interval = 10000
-        fastestInterval = 5000
-        numUpdates = 10
-    }
-
-    private val builder = LocationSettingsRequest.Builder()
-        .addLocationRequest(locationRequest)
-        .setAlwaysShow(true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,6 +79,35 @@ class MainFragment : Fragment() {
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+
+        // adapter //
+        var items = ArrayList<VisitModel>()
+        rvAdapter = VisitRVAdapter(requireContext(), items)
+
+        val recycler : RecyclerView = binding.rv
+        val emptyView : TextView = binding.emptyView
+
+        val postListener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Get Post object and use the values to update the UI
+                for (dataModel in dataSnapshot.children){
+                    Log.d(TAG, dataModel.toString())
+
+                    val item = dataModel.getValue(VisitModel::class.java)
+                    items.add(item!!)
+                }
+                rvAdapter.notifyDataSetChanged() // 밑에 함수들이 먼저 실행되고 데이터가 나중에 불러와지기 때문에 동기화가 필요
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
+            }
+        }
+        FBRef.visit.addValueEventListener(postListener)
+
+        recycler.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
+        recycler.adapter = rvAdapter
 
         // 위치 권한 //
         val locationPermissionRequest = registerForActivityResult(

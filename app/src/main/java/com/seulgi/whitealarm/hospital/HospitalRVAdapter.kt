@@ -30,7 +30,7 @@ class HospitalRVAdapter(
         return hospital.size
     }
 
-    class Viewholder(itemView: View) : RecyclerView.ViewHolder(itemView){
+    inner class Viewholder(itemView: View) : RecyclerView.ViewHolder(itemView){
         val name : Button = itemView.findViewById(R.id.hospitalArea)
     }
 

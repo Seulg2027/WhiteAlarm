@@ -107,19 +107,20 @@ class HospitalFragment : Fragment() {
         }
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
-        val mapView = MapView(requireContext())
-        binding.mapView.addView(mapView)
-
         // RecyclerView
         rvAdapter = HospitalRVAdapter(requireContext(), listItems)
 
         binding.locationBtn.setOnClickListener {
             if (checkLocationService()) {
-                moveToLocation(mapView)
+                moveToLocation(binding.mapView)
             } else {
                 Toast.makeText(requireContext(), "GPS를 켜주세요", Toast.LENGTH_SHORT).show()
             }
         }
+        binding.stopBtn.setOnClickListener {
+            stopTracking()
+        }
+
         val recycler : RecyclerView = binding.rv
         recycler.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         recycler.adapter = rvAdapter
@@ -127,7 +128,7 @@ class HospitalFragment : Fragment() {
         rvAdapter.setItemClickListener(object: HospitalRVAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int){
                 val mapPoint = MapPoint.mapPointWithGeoCoord(listItems[position].y, listItems[position].x)
-                mapView.setMapCenterPointAndZoomLevel(mapPoint, 1,true)
+                binding.mapView.setMapCenterPointAndZoomLevel(mapPoint, 1,true)
             }
         })
 
@@ -140,7 +141,7 @@ class HospitalFragment : Fragment() {
                 super.onLocationResult(p0)
                 Log.d(TAG, p0.lastLocation.latitude.toString())
                 mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(p0.lastLocation.latitude, p0.lastLocation.longitude), true)
-                startTracking(mapView)
+                startTracking()
                 searchKeyword("병원", p0.lastLocation.latitude.toString(), p0.lastLocation.longitude.toString(), mapView)
             }
             override fun onLocationAvailability(p0: LocationAvailability) {
@@ -195,7 +196,7 @@ class HospitalFragment : Fragment() {
                 // api 통신 성공
                 Log.d(TAG, "Raw: ${response.raw()}")
                 Log.d(TAG, "Body: ${response.body()}")
-                setItems(response.body(), mapView)
+                setItems(response.body())
             }
 
             override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
@@ -206,10 +207,10 @@ class HospitalFragment : Fragment() {
     }
 
     // 검색 결과 처리 //
-    private fun setItems(searchResult: ResultSearchKeyword?, mapView: MapView){
+    private fun setItems(searchResult: ResultSearchKeyword?){
         if(!searchResult?.documents.isNullOrEmpty()) {
             listItems.clear()
-            mapView.removeAllPolylines()
+            binding.mapView.removeAllPolylines()
             for (document in searchResult!!.documents) {
                 // 결과를 리사이클러 뷰에 추가
                 val item = HospitalListLayout(document.place_name,
@@ -228,7 +229,7 @@ class HospitalFragment : Fragment() {
                     markerType = MapPOIItem.MarkerType.BluePin
                     selectedMarkerType = MapPOIItem.MarkerType.RedPin
                 }
-                mapView.addPOIItem(point)
+                binding.mapView.addPOIItem(point)
             }
             rvAdapter.notifyDataSetChanged()
 
@@ -246,7 +247,11 @@ class HospitalFragment : Fragment() {
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
-    private fun startTracking(mapView : MapView) {
-        mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
+    private fun startTracking() {
+        binding.mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
+    }
+
+    private fun stopTracking() {
+        binding.mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
     }
 }

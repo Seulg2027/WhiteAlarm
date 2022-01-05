@@ -8,5 +8,6 @@ class FBRef {
         private val database = Firebase.database
 
         val news = database.getReference("news")
+        val visit = database.getReference("visit")
     }
 }

@@ -38,7 +38,7 @@
 
             </LinearLayout>
 
-            <RelativeLayout
+            <net.daum.mf.map.api.MapView
                 android:id="@+id/mapView"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
@@ -52,8 +52,18 @@
                 android:gravity="center"
                 android:text="위치 추적하기"
                 android:textColor="@color/white"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/mapView" />
+
+            <Button
+                android:id="@+id/stopBtn"
+                android:layout_width="200dp"
+                android:layout_height="30dp"
+                android:background="@color/black"
+                android:gravity="center"
+                android:text="중단"
+                android:textColor="@color/white"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/mapView" />
 
             <LinearLayout
