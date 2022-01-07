@@ -1,6 +1,7 @@
 package com.seulgi.whitealarm.fragments
 
 import android.Manifest
+import android.content.Context
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -21,7 +22,8 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
@@ -31,8 +33,8 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.seulgi.whitealarm.main.VisitModel
 import com.seulgi.whitealarm.main.VisitRVAdapter
-import com.seulgi.whitealarm.news.NewsModel
 import com.seulgi.whitealarm.util.FBRef
+import com.seulgi.whitealarm.util.FBauth
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -47,6 +49,8 @@ private const val ARG_PARAM2 = "param2"
 class MainFragment : Fragment() {
     private lateinit var binding: FragmentMainBinding
     lateinit var rvAdapter: VisitRVAdapter
+    val keyList = mutableListOf<String>()
+    val items = ArrayList<VisitModel>()
 
     private var TAG = MainFragment::class.java.simpleName
 
@@ -80,34 +84,21 @@ class MainFragment : Fragment() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
+        getVisitUidData() // 사용자의 visit 정보를 불러옴
+
         // adapter //
-        var items = ArrayList<VisitModel>()
         rvAdapter = VisitRVAdapter(requireContext(), items)
 
         val recycler : RecyclerView = binding.rv
         val emptyView : TextView = binding.emptyView
 
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // Get Post object and use the values to update the UI
-                for (dataModel in dataSnapshot.children){
-                    Log.d(TAG, dataModel.toString())
-
-                    val item = dataModel.getValue(VisitModel::class.java)
-                    items.add(item!!)
-                }
-                rvAdapter.notifyDataSetChanged() // 밑에 함수들이 먼저 실행되고 데이터가 나중에 불러와지기 때문에 동기화가 필요
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-                Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
-            }
-        }
-        FBRef.visit.addValueEventListener(postListener)
-
         recycler.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         recycler.adapter = rvAdapter
+
+        // popup
+        binding.butPopup.setOnClickListener {
+            showPopup()
+        }
 
         // 위치 권한 //
         val locationPermissionRequest = registerForActivityResult(
@@ -133,5 +124,46 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
+    private fun showPopup() {
+        val inflater = context?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val view = inflater.inflate(R.layout.alert_popup, null)
+        val textView: TextView = view.findViewById(R.id.textView)
+        textView.text = "alert입니다"
+
+        val alertDialog = AlertDialog.Builder(requireContext())
+                .setTitle("hello")
+                .setPositiveButton("저장") { dialog, which ->
+                    Toast.makeText(context, "pushed save", Toast.LENGTH_SHORT).show()
+                }
+                .setNeutralButton("취소", null)
+                .create()
+
+        alertDialog.setView(view)
+        alertDialog.show()
+    }
+
+    private fun getVisitUidData() {
+        val postListener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Get Post object and use the values to update the UI
+                for (dataModel in dataSnapshot.children){
+                    val item = dataModel.getValue(VisitModel::class.java)
+                    Log.d(TAG, item.toString())
+                    items.add(item!!)
+                }
+
+                rvAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
+            }
+        }
+        Log.e(TAG, FBauth.getUid())
+        FBRef.visit
+                .child(FBauth.getUid())
+                .addValueEventListener(postListener)
+    }
 
 }

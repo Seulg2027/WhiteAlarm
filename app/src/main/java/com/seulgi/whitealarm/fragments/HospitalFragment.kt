@@ -140,9 +140,10 @@ class HospitalFragment : Fragment() {
             override fun onLocationResult(p0 : LocationResult){
                 super.onLocationResult(p0)
                 Log.d(TAG, p0.lastLocation.latitude.toString())
+                Log.d(TAG, p0.lastLocation.longitude.toString())
                 mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(p0.lastLocation.latitude, p0.lastLocation.longitude), true)
                 startTracking()
-                searchKeyword("병원", p0.lastLocation.latitude.toString(), p0.lastLocation.longitude.toString(), mapView)
+                searchKeyword("병원", p0.lastLocation.latitude.toString(), p0.lastLocation.longitude.toString())
             }
             override fun onLocationAvailability(p0: LocationAvailability) {
                 super.onLocationAvailability(p0)
@@ -179,13 +180,13 @@ class HospitalFragment : Fragment() {
     }
 
     // 키워드 검색 //
-    private fun searchKeyword(keyword: String, x: String, y: String, mapView: MapView){
+    private fun searchKeyword(keyword: String, x: String, y: String){
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val api = retrofit.create(KakaoAPI::class.java)
-        val call = api.getSearchKeyword(API_KEY, keyword, x, y)
+        val call = api.getSearchKeyword(API_KEY, "126", x, keyword)
 
         // API 서버에 요청
         call.enqueue(object: Callback<ResultSearchKeyword> {

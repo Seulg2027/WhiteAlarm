@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.seulgi.whitealarm.R
 
@@ -29,7 +30,11 @@ class VisitRVAdapter (
 
     inner class Viewholder(itemView: View) : RecyclerView.ViewHolder(itemView){
         fun bindItems (item: VisitModel){
+            val placeName : TextView = itemView.findViewById(R.id.place_name)
+            val visitTime : TextView = itemView.findViewById(R.id.visit_time)
 
+            placeName.text = item.place_name
+            visitTime.text = item.date
         }
     }
 }
