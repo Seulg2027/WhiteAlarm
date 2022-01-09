@@ -95,10 +95,6 @@ class MainFragment : Fragment() {
         recycler.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         recycler.adapter = rvAdapter
 
-        // popup
-        binding.butPopup.setOnClickListener {
-            showPopup()
-        }
 
         // 위치 권한 //
         val locationPermissionRequest = registerForActivityResult(
@@ -128,11 +124,11 @@ class MainFragment : Fragment() {
         val inflater = context?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val view = inflater.inflate(R.layout.alert_popup, null)
         val textView: TextView = view.findViewById(R.id.textView)
-        textView.text = "alert입니다"
+        textView.text = "연세사랑병원 에 방문한지 7일이 지났습니다."
 
         val alertDialog = AlertDialog.Builder(requireContext())
-                .setTitle("hello")
-                .setPositiveButton("저장") { dialog, which ->
+                .setTitle("병원 방문 알림")
+                .setPositiveButton("확인") { dialog, which ->
                     Toast.makeText(context, "pushed save", Toast.LENGTH_SHORT).show()
                 }
                 .setNeutralButton("취소", null)
@@ -148,10 +144,13 @@ class MainFragment : Fragment() {
                 // Get Post object and use the values to update the UI
                 for (dataModel in dataSnapshot.children){
                     val item = dataModel.getValue(VisitModel::class.java)
-                    Log.d(TAG, item.toString())
+                    Log.d(TAG, FBauth.diffTime(item!!.getdateData()).toString())
+
+                    if (FBauth.diffTime(item!!.getdateData()) >= 2){
+                        showPopup()
+                    }
                     items.add(item!!)
                 }
-
                 rvAdapter.notifyDataSetChanged()
             }
 
