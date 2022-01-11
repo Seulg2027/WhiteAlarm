@@ -120,18 +120,18 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
-    private fun showPopup() {
+    private fun showPopup(place_name : String) {
         val inflater = context?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val view = inflater.inflate(R.layout.alert_popup, null)
         val textView: TextView = view.findViewById(R.id.textView)
-        textView.text = "연세사랑병원 에 방문한지 7일이 지났습니다."
+        textView.text = "${place_name}에 방문한지 7일이 지났습니다. 계속 방문하시겠습니까?"
 
         val alertDialog = AlertDialog.Builder(requireContext())
                 .setTitle("병원 방문 알림")
-                .setPositiveButton("확인") { dialog, which ->
-                    Toast.makeText(context, "pushed save", Toast.LENGTH_SHORT).show()
+                .setPositiveButton("예") { dialog, which ->
+                    Toast.makeText(context, "알림 설정이 완료되었습니다.", Toast.LENGTH_SHORT).show()
                 }
-                .setNeutralButton("취소", null)
+                .setNeutralButton("아니오", null)
                 .create()
 
         alertDialog.setView(view)
@@ -146,8 +146,8 @@ class MainFragment : Fragment() {
                     val item = dataModel.getValue(VisitModel::class.java)
                     Log.d(TAG, FBauth.diffTime(item!!.getdateData()).toString())
 
-                    if (FBauth.diffTime(item!!.getdateData()) >= 2){
-                        showPopup()
+                    if (FBauth.diffTime(item!!.getdateData()) >= 7){
+                        showPopup(item!!.getPlaceName())
                     }
                     items.add(item!!)
                 }

@@ -186,7 +186,7 @@ class HospitalFragment : Fragment() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val api = retrofit.create(KakaoAPI::class.java)
-        val call = api.getSearchKeyword(API_KEY, "126", x, keyword)
+        val call = api.getSearchKeyword(API_KEY, "126.9801475", "37.4726068", keyword)
 
         // API 서버에 요청
         call.enqueue(object: Callback<ResultSearchKeyword> {
